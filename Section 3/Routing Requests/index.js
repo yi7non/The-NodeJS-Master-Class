@@ -37,6 +37,9 @@ var server = http.createServer(function(req,res){
       buffer += decoder.end();
 
       // Check the router for a matching path for a handler. If one is not found, use the notFound handler instead.
+      // here we check if the router that the user ask for is exist in our predefined respons handler 
+      // function in routr object (for example = localhost:3000/sample), if so the chosenHandler 
+      // will be  handlers.trimmedPath in our case handlers.sample other wise it will be handlers.notFound
       var chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
 
       // Construct the data object to send to the handler
@@ -90,5 +93,9 @@ handlers.notFound = function(data,callback){
 
 // Define the request router
 var router = {
-  'sample' : handlers.sample
+  'sample' : handlers.sample // This means that if the user will be make a request to
+                             // localhost:3000/sample The function that is activated in response 
+                             // will be handlers.sample If the path that the user asks not part 
+                             // of what we set up in router the function that will respond 
+                             // will be handlers.notFound
 };

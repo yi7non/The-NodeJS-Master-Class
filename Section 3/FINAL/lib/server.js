@@ -37,18 +37,20 @@ server.httpsServerOptions = {
  // All the server logic for both the http and https server
 server.unifiedServer = function(req,res){
 
-   // Parse the url
-   var parsedUrl = url.parse(req.url, true);
+// Parse the url [after ew call url.parse, parsedUrl will be object that contain all metadata about the url]
+var parsedUrl = url.parse(req.url, true);// the true is for tell the parse function to use querystring modules
 
-   // Get the path
-   var path = parsedUrl.pathname;
-   var trimmedPath = path.replace(/^\/+|\/+$/g, '');
+
+  // Get the path
+  var path = parsedUrl.pathname; // for example if the request is http://www.example.com/foo/ the path var contain the "/foo/" string
+                                 // ther for we trim it below 
+   var trimmedPath = path.replace(/^\/+|\/+$/g, '');// now if the request is http://www.example.com/foo/bar/ trimmedPath will contain the string "foo/bar"
 
    // Get the query string as an object
    var queryStringObject = parsedUrl.query;
 
    // Get the HTTP method
-   var method = req.method.toLowerCase();
+   var method = req.method.toLowerCase(); // this help us with our up CRAD operation
 
    //Get the headers as an object
    var headers = req.headers;
@@ -56,13 +58,20 @@ server.unifiedServer = function(req,res){
    // Get the payload,if any
    var decoder = new StringDecoder('utf-8');
    var buffer = '';
+  // nodejs receives its payload (e.g. the body sent as part of a form) in the form of a stream
+  // (i.e. a little bit each time), and we need to group this information into one unit
+  // The req parameter fires the event data every time a cunck of information arrives
+  // so we can bind everything to a buffer variable
    req.on('data', function(data) {
        buffer += decoder.write(data);
    });
    req.on('end', function() {
-       buffer += decoder.end();
+       buffer += decoder.end();// this 'end' event go to be called even if no payload
 
        // Check the router for a matching path for a handler. If one is not found, use the notFound handler instead.
+       // here we check if the router that the user ask for is exist in our predefined respons handler 
+       // function in routr object (for example = localhost:3000/sample), if so the chosenHandler 
+       // will be  handlers.trimmedPath in our case handlers.sample other wise it will be handlers.notFound
        var chosenHandler = typeof(server.router[trimmedPath]) !== 'undefined' ? server.router[trimmedPath] : handlers.notFound;
 
        // Construct the data object to send to the handler
@@ -103,7 +112,11 @@ server.unifiedServer = function(req,res){
  };
 
  // Define the request router
-server.router = {
+server.router = { // This means that if the user will be make a request to
+                  // localhost:3000/ping The function that is activated in response 
+                  // will be handlers.ping If the path that the user asks not part 
+                  // of what we set up in router the function that will respond 
+                  // will be handlers.notFound
    'ping' : handlers.ping,
    'users' : handlers.users,
    'tokens' : handlers.tokens,

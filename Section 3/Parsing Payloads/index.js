@@ -30,11 +30,13 @@ var server = http.createServer(function(req,res){
   // Get the payload,if any
   var decoder = new StringDecoder('utf-8');
   var buffer = '';
+  // nodejs receives its payload (e.g. the body sent as part of a form) in the form of a stream i.e. a little bit each time, and we need to group this information into one unit
+  // The req parameter fires the event data every time a cunck of information arrives so we can bind everything to a buffer variable
   req.on('data', function(data) {
-      buffer += decoder.write(data);
+    buffer += decoder.write(data);
   });
   req.on('end', function() {
-      buffer += decoder.end();
+      buffer += decoder.end();// this 'end' event go to be called even if no payload
 
       // Send the response
       res.end('Hello World!\n');
